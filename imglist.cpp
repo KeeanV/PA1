@@ -20,7 +20,8 @@
  */
 ImgList::ImgList() {
     // set appropriate values for all member attributes here
-	
+    ImgNode* northwest = NULL;
+    ImgNode* southeast = NULL;
 }
 
 /**
@@ -29,7 +30,18 @@ ImgList::ImgList() {
  */
 ImgList::ImgList(PNG& img) {
     // build the linked node structure and set the member attributes appropriately
-	
+    ImgNode* northwest = img.getPixel(0,0);
+    ImgNode* southeast = img.getPixel(img.width(),img.height());
+    
+    
+    ImgNode* curr = northwest->east;
+    for (int x = 1; x <= img.width(); x++) {
+        for (int y = 0; y <= img.height(); y++) {
+            RGBAPixel* pixel = img.getPixel(x,y);
+
+        }
+    }
+
 }
 
 /************
@@ -45,7 +57,18 @@ ImgList::ImgList(PNG& img) {
  */
 unsigned int ImgList::GetDimensionX() const {
     // replace the following line with your implementation
-    return -1;
+
+    if (northwest==NULL) {
+        return 0;
+    }
+    unsigned int count = 1;
+    ImgNode* northwest;
+    ImgNode* curr = northwest;
+        while (curr->east!=NULL) {
+        curr = curr->east;
+        count++;
+    }
+    return count;
 }
 
 /**
@@ -58,7 +81,16 @@ unsigned int ImgList::GetDimensionX() const {
  */
 unsigned int ImgList::GetDimensionY() const {
     // replace the following line with your implementation
-    return -1;
+    if (northwest==NULL) {
+        return 0;
+    }
+    unsigned int count = 1;
+    ImgNode* curr = northwest;
+    while (curr->south!=NULL) {
+        curr = curr->south;
+        count++;
+    }
+    return count;
 }
 
 /**
@@ -70,7 +102,19 @@ unsigned int ImgList::GetDimensionY() const {
  */
 unsigned int ImgList::GetDimensionFullX() const {
     // replace the following line with your implementation
-    return -1;
+    if (northwest==NULL) {
+        return 0;
+    }
+    ImgNode* curr = northwest;
+    unsigned int count = 1;
+    while (curr->east!=NULL) {
+        if (curr->skipright > 0) {
+            count +=curr->skipright;
+        }
+        curr = curr->east;
+        count++;
+    }
+    return count;
 }
 
 /**
@@ -92,8 +136,64 @@ unsigned int ImgList::GetDimensionFullX() const {
  */
 ImgNode* ImgList::SelectNode(ImgNode* rowstart, int selectionmode) {
     // add your implementation below
-  
-    return NULL;
+    if (selectionmode==0) {        
+        ImgNode* temp = rowstart;
+        temp = temp->east;
+     
+        if(temp->east->east==NULL) {
+            return temp;
+        }
+        ImgNode* minIndex = temp;
+        unsigned int brightness;
+        unsigned int minBrightness;
+
+        brightness+=temp->colour.r; 
+        brightness+=temp->colour.g; 
+        brightness+=temp->colour.b; 
+        brightness*=temp->colour.a;
+        temp = temp->east;
+       
+        while(temp->east->east!=NULL) {
+        // MAKE A HELPER FUNCTION TO CALCULATE BRIGHTNESS
+            unsigned int brightness2; 
+            brightness2+=temp->colour.r; 
+            brightness2+=temp->colour.g; 
+            brightness2+=temp->colour.b; 
+            brightness2*=temp->colour.a;
+            if (brightness2 < brightness) {
+                minIndex = temp;
+            } 
+            temp=temp->east;           
+        }
+        return minIndex;
+    }
+
+
+    if (selectionmode==1){
+        ImgNode* temp = rowstart;
+        temp = temp->east;
+        
+        if(temp->east->east==NULL) {
+            return temp;
+        }
+        
+        ImgNode* minIndex = temp;
+        double tempEastDiff = temp->colour.distanceTo(temp->west->colour);
+        double tempWestDiff = temp->colour.distanceTo(temp->east->colour);
+        double total = tempEastDiff + tempWestDiff;
+        temp = temp->east;
+
+        while(temp->east->east!=NULL) {
+            double total2;
+            total2 = ((temp->colour.distanceTo(temp->west->colour)) + (temp->colour.distanceTo(temp->east->colour)));
+            if (total2 < total) {
+                minIndex = temp;
+            }
+            temp=temp->east;
+        }
+
+    return minIndex;
+    }
 }
 
 /**
@@ -115,7 +215,8 @@ ImgNode* ImgList::SelectNode(ImgNode* rowstart, int selectionmode) {
  */
 PNG ImgList::Render(bool fillgaps, int fillmode) const {
     // Add/complete your implementation below
-  
+    // RGBAPixel* px = outpng.getPixel(x, y);
+    // *px = current_node->colour; // sets pixel inside of PNG to colour of node
     PNG outpng; //this will be returned later. Might be a good idea to resize it at some point.
   
     return outpng;
@@ -167,8 +268,10 @@ void ImgList::Carve(unsigned int rounds, int selectionmode) {
  *       member attributes have values consistent with an empty list.
  */
 void ImgList::Clear() {
-    // add your implementation here
-	
+    
+    ImgNode* northwest = NULL;
+    ImgNode* southeast = NULL;
+
 }
 
 /**
